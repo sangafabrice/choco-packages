@@ -1,0 +1,4 @@
+[submodule "DownloadInfo"]
+	path = DownloadInfo
+	url = https://github.com/sangafabrice/download-info.git
+	branch = pwsh-module
