@@ -8,7 +8,7 @@
 		<title>Avast Secure Browser</title>
 		<authors>Avast Software</authors>
 		<projectUrl>https://www.avast.com/en-us/secure-browser#pc</projectUrl>
-		<iconUrl>http://rawcdn.githack.com/__REPLACE_YOUR_REPO__/master/icons/avast-secure.png</iconUrl>
+		<iconUrl>https://rawcdn.githack.com/sangafabrice/choco-packages/148786c35aee794f9ffc6bb739eb15516b618346/icon.png</iconUrl>
 		<copyright>© $year$ Avast Software s.r.o.</copyright>
 		<licenseUrl>https://www.avast.com/en-us/eula#pc</licenseUrl>
 		<requireLicenseAcceptance>true</requireLicenseAcceptance>
