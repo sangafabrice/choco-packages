@@ -1,3 +1,16 @@
+Class _ {
+    Static [string] FormatXml([xml] $Xml, [uint] $Indent = 2) {
+        $StringWriter = [System.IO.StringWriter]::New()
+        $XmlWriter = [System.XMl.XmlTextWriter]::New($StringWriter)
+        $XmlWriter.Formatting = "indented"
+        $XmlWriter.Indentation = $Indent
+        $Xml.WriteContentTo($XmlWriter)
+        $XmlWriter.Flush()
+        $StringWriter.Flush()
+        Return $StringWriter.ToString()
+    }
+}
+
 Filter New-TestSandbox {
     Push-Location $PSScriptRoot
     [xml] (Get-Content .\config.wsb -Raw) |
@@ -11,7 +24,7 @@ Filter New-TestSandbox {
                 {$_ -match '\\test$'} { $Folder.HostFolder = "$ChocoPackages\main\test" }
             }
         }
-        $_.OuterXml | Out-File .\choco.wsb
+        [_]::FormatXml($_, 4) | Out-File .\choco.wsb
     }
     Pop-Location
 }
