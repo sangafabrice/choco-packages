@@ -3,7 +3,7 @@
 	<metadata>
 		<id>avast-secure</id>
 		<version>1.0.0</version>
-		<packageSourceUrl>https://github.com/sangafabrice</packageSourceUrl>
+		<packageSourceUrl>https://github.com/sangafabrice/choco-packages/tree/avast-secure</packageSourceUrl>
 		<owners>sangafabrice</owners>
 		<title>Avast Secure Browser</title>
 		<authors>Avast Software</authors>
