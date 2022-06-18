@@ -1,6 +1,13 @@
-﻿$ErrorActionPreference = 'Stop';
-. "$PSScriptRoot\helper.ps1"
-Switch ([CurrentInstall]::SilentUninstallString()) {
-    { [string]::IsNullOrEmpty($_) } { Write-Warning 'Avast Secure Browser is already uninstalled.' }
-	Default { Invoke-Expression ". $([CurrentInstall]::SilentUninstallString())" }
+﻿$ErrorActionPreference = 'Stop'
+. "$(Split-Path $MyInvocation.MyCommand.Definition)\helpers.ps1"
+Switch (Get-SilentUninstallString) {
+    { [string]::IsNullOrEmpty($_) } { 
+        Write-Warning 'Avast Secure Browser is already uninstalled.'
+    }
+	Default {
+        Stop-ExeProcess
+        Uninstall-BinFile -Name $ShimName
+        Invoke-Expression $_
+        Set-PowerShellExitCode -ExitCode 0
+    }
 }

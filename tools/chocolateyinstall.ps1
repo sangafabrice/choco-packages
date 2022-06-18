@@ -1,19 +1,16 @@
 $ErrorActionPreference = 'Stop'
-. "$PSScriptRoot\helper.ps1"
+$Private:ToolDir = Split-Path $MyInvocation.MyCommand.Definition
+. "$ToolDir\helpers.ps1"
 @{
 	PackageName   = $Env:ChocolateyPackageName
-	UnzipLocation = $PSScriptRoot
+	UnzipLocation = $ToolDir
 	FileType      = 'exe'
-	SoftwareName  = [CurrentInstall]::Name
+	SoftwareName  = $Name
 	SilentArgs    = '--chrome --do-not-launch-chrome --hide-browser-override --show-developer-mode --suppress-first-run-bubbles --default-search-id=1001 --default-search=google.com --adblock-mode-default=1'
 } + (
-	Get-DownloadInfo -PropertyList @{
-		UpdateServiceURL = 'https://update.avastbrowser.com/service/update2'
-		ApplicationID    = '{A8504530-742B-42BC-895D-2BAD6406F698}'
-		OwnerBrand       = '2101'
-		OSArch           = [CurrentInstall]::MachineType
-	} -From Omaha | ForEach-Object {
-		$( If ([CurrentInstall]::Is64bit) { @{
+	Get-UpdateInfo |
+	ForEach-Object {
+		$( If ($ExecutableType -eq 'x64') { @{
 			Url64bit       = $_.Link
 			Checksum64     = $_.Checksum
 			ChecksumType64 = 'SHA256'
@@ -24,16 +21,16 @@ $ErrorActionPreference = 'Stop'
 		} } ) + @{ Version = $_.Version }
 	}
 ) | ForEach-Object {
-	If ([CurrentInstall]::IsOutdated([version] $_.Version)) {
+	If (Test-IsOutdated ([version] $_.Version)) {
 		$_.Remove('Version')
+		Stop-ExeProcess
 		Install-ChocolateyPackage @_
 	}
 	Try {
-		Get-Item ([CurrentInstall]::Executable()) |
-		ForEach-Object { @{
-			Name = $_.Name -replace '\.exe$'
-			Path = $_.FullName
-		} } | ForEach-Object { Install-BinFile @_ } 
+		@{
+			Name = $ShimName
+			Path = (Get-Executable)
+		} | ForEach-Object { Install-BinFile @_ } 
 	}
 	Catch { "ERROR: $($_.Exception.Message)" }
 }

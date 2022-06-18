@@ -1,4 +1,20 @@
+Import-Module "$PSScriptRoot\DownloadInfo" -Force
+
 Class Distribution {
+    Static [hashtable] $PropertyList = @{
+        UpdateServiceURL = 'https://update.avastbrowser.com/service/update2'
+        ApplicationID    = '{A8504530-742B-42BC-895D-2BAD6406F698}'
+        OwnerBrand       = '2101'
+    }
+
+    Static [hashtable] $PtyList32 = $(([Distribution]::PropertyList) + @{ OSArch = 'x86' })
+
+    Static [hashtable] $PtyList64 = $(([Distribution]::PropertyList) + @{ OSArch = 'x64' })
+
+    Static $UpdateInfo32 = $(Get-DownloadInfo -PropertyList ([Distribution]::PtyList32) -From Omaha)
+
+    Static $UpdateInfo64 = $(Get-DownloadInfo -PropertyList ([Distribution]::PtyList64) -From Omaha)
+
     Static [string] $PackageName = ((Get-Item "$(& { $PSScriptRoot })\*.nuspec").Name -replace '\.nuspec$')
     
     Static [string] NewNugetPackage($Version, [string] $Properties) {
@@ -19,28 +35,46 @@ Class Distribution {
 
     Static [string] UpdateVersion() {
         Push-Location $PSScriptRoot
-        $DIModule = Get-Module | Where-Object Name -eq 'DownloadInfo'
-        Import-Module .\DownloadInfo -Force
         $GetXmlContent = { [xml] (Get-Content .\pkg.xml -Raw) }
         $PkgXml = & $GetXmlContent
         @{
             Current = [version] $PkgXml.package.version
-            Download = [version] (Get-DownloadInfo -PropertyList @{
-                    UpdateServiceURL = 'https://update.avastbrowser.com/service/update2'
-                    ApplicationID    = '{A8504530-742B-42BC-895D-2BAD6406F698}'
-                    OwnerBrand       = '2101'
-                } -From Omaha).Version
+            Current32 = [version] $PkgXml.package.version32
+            Download = [version] ([Distribution]::UpdateInfo64).Version
+            Download32 = [version] ([Distribution]::UpdateInfo32).Version
         } | ForEach-Object {
-            If ($_.Current -lt $_.Download) {
+            If ($_.Current -le $_.Download -and $_.Current32 -le $_.Download32) {
                 $PkgXml.package.version = "$($_.Download)"
+                $PkgXml.package.version32 = "$($_.Download32)"
                 $PkgXml.OuterXml | Out-File .\pkg.xml
+                '.\tools\helpers.ps1' |
+                ForEach-Object {
+                    $Count = (Get-Content $_ |
+                    Select-Object -Skip ([Distribution]::UpdateInfo() -split "`n").Count).Count
+                    Set-Content $_ -Value ([Distribution]::UpdateInfo() + "`n" + ((Get-Content $_ -Tail $Count) -join "`n"))
+                }
             }
         }
         $Result = (& $GetXmlContent).package.version
-        Remove-Module DownloadInfo -Force
-        If ($DIModule.Count -gt 0) { Import-Module DownloadInfo }
         Pop-Location
         Return $Result
+    }
+
+    Static [string] UpdateInfo() {
+        $UI32 = [Distribution]::UpdateInfo32
+        $UI64 = [Distribution]::UpdateInfo64
+        Return @"
+`$UpdateInfo = @{
+    Version = '$($UI32.Version)'
+    Link = '$($UI32.Link)'
+    Checksum = '$($UI32.Checksum)'
+}
+`$UpdateInfo64 = @{
+    Version = '$($UI64.Version)'
+    Link = '$($UI64.Link)'
+    Checksum = '$($UI64.Checksum)'
+}
+"@
     }
 }
 
