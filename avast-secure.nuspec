@@ -11,7 +11,7 @@
 		<iconUrl>https://rawcdn.githack.com/sangafabrice/choco-packages/148786c35aee794f9ffc6bb739eb15516b618346/icon.png</iconUrl>
 		<copyright>© $year$ Avast Software s.r.o.</copyright>
 		<licenseUrl>https://www.avast.com/en-us/eula#pc</licenseUrl>
-		<requireLicenseAcceptance>true</requireLicenseAcceptance>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<tags>avast secure web internet browser omaha</tags>
 		<summary>Avast Secure is a modern web browser that provides fast and encrypted secure browsing.</summary>
 		<description>
