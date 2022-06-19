@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
 	<metadata>
 		<id>avast-secure</id>
-		<version>2.0.0</version>
+		<version>2.0.1</version>
 		<packageSourceUrl>https://github.com/sangafabrice/choco-packages/tree/avast-secure</packageSourceUrl>
 		<owners>sangafabrice</owners>
 		<title>Avast Secure Browser</title>

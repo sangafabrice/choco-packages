@@ -16,8 +16,8 @@ $Name = 'Avast Secure Browser*'
 $ShimName = 'AvastBrowser'
 
 $OSArch = $(If ($(
-	Try { [Environment]::Is64BitOperatingSystem }
-	Catch { (Get-WmiObject Win32_OperatingSystem).OSArchitecture -match '64' }
+	Try { (Get-WmiObject Win32_OperatingSystem).OSArchitecture -match '64' }
+	Catch { [Environment]::Is64BitOperatingSystem }
 )) { 'x64' } Else { 'x86' })
 
 Filter Get-Executable {
@@ -72,12 +72,15 @@ Filter Stop-ExeProcess {
 
 Function Get-UpdateInfo {
 	Try {
-		Get-DownloadInfo -PropertyList @{
-			UpdateServiceURL = 'https://update.avastbrowser.com/service/update2'
-			ApplicationID    = '{A8504530-742B-42BC-895D-2BAD6406F698}'
-			OwnerBrand       = '2101'
-			OSArch           = $ExecutableType
-		} -From Omaha
+		Switch (
+			Get-DownloadInfo -PropertyList @{
+				UpdateServiceURL = 'https://update.avastbrowser.com/service/update2'
+				ApplicationID    = '{A8504530-742B-42BC-895D-2BAD6406F698}'
+				OwnerBrand       = '2101'
+				OSArch           = $ExecutableType
+			} -From Omaha
+		) { { $Null -notin @($_.Version,$_.Link,$_.Checksum) } { Return $_ } }
+		Throw
 	}
 	Catch {
 		Switch ($ExecutableType) {
