@@ -65,13 +65,13 @@ Class Distribution {
         $UI64 = [Distribution]::UpdateInfo64
         Return @"
 `$UpdateInfo = @{
-    Version = '$($UI32.Version)'
-    Link = '$($UI32.Link)'
+    Version  = '$($UI32.Version)'
+    Link     = '$($UI32.Link)'
     Checksum = '$($UI32.Checksum)'
 }
 `$UpdateInfo64 = @{
-    Version = '$($UI64.Version)'
-    Link = '$($UI64.Link)'
+    Version  = '$($UI64.Version)'
+    Link     = '$($UI64.Link)'
     Checksum = '$($UI64.Checksum)'
 }
 "@
