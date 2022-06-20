@@ -2,14 +2,19 @@ Import-Module "$PSScriptRoot\DownloadInfo" -Force
 
 Class Distribution {
     Static [hashtable] $PropertyList = @{
-        UpdateServiceURL = 'https://update.avastbrowser.com/service/update2'
-        ApplicationID    = '{A8504530-742B-42BC-895D-2BAD6406F698}'
-        OwnerBrand       = '2101'
+        UpdateServiceURL = 'https://update.googleapis.com/service/update2'
+        ApplicationID    = '{8A69D345-D564-463c-AFF1-A69D9E530F96}'
     }
+    
+    Static [hashtable] $PtyList32 = $(([Distribution]::PropertyList) + @{
+        OwnerBrand      = 'GGLS'
+        ApplicationSpec = 'stable-arch_x86-statsdef_1'
+    })
 
-    Static [hashtable] $PtyList32 = $(([Distribution]::PropertyList) + @{ OSArch = 'x86' })
-
-    Static [hashtable] $PtyList64 = $(([Distribution]::PropertyList) + @{ OSArch = 'x64' })
+    Static [hashtable] $PtyList64 = $(([Distribution]::PropertyList) + @{
+        OwnerBrand      = 'YTUH'
+        ApplicationSpec = 'x64-stable-statsdef_1'
+    })
 
     Static $UpdateInfo32 = $(Get-DownloadInfo -PropertyList ([Distribution]::PtyList32) -From Omaha)
 
@@ -49,9 +54,10 @@ Class Distribution {
                 $PkgXml.OuterXml | Out-File .\pkg.xml
                 '.\tools\helpers.ps1' |
                 ForEach-Object {
+                    $Dui = [Distribution]::UpdateInfo()
                     $Count = (Get-Content $_ |
-                    Select-Object -Skip ([Distribution]::UpdateInfo() -split "`n").Count).Count
-                    Set-Content $_ -Value ([Distribution]::UpdateInfo() + "`n" + ((Get-Content $_ -Tail $Count) -join "`n"))
+                    Select-Object -Skip ($Dui -split "`n").Count).Count
+                    Set-Content $_ -Value ($Dui + "`n" + ((Get-Content $_ -Tail $Count) -join "`n"))
                 }
             }
         }
@@ -60,18 +66,20 @@ Class Distribution {
         Return $Result
     }
 
+    Static [string] SelectHttps([uri[]] $Link) { Return $Link.Where({ "$_" -like 'https://*' })[0] }
+
     Static [string] UpdateInfo() {
         $UI32 = [Distribution]::UpdateInfo32
         $UI64 = [Distribution]::UpdateInfo64
         Return @"
 `$UpdateInfo = @{
-    Version = '$($UI32.Version)'
-    Link = '$($UI32.Link)'
+    Version  = '$($UI32.Version)'
+    Link     = '$([Distribution]::SelectHttps($UI32.Link))'
     Checksum = '$($UI32.Checksum)'
 }
 `$UpdateInfo64 = @{
-    Version = '$($UI64.Version)'
-    Link = '$($UI64.Link)'
+    Version  = '$($UI64.Version)'
+    Link     = '$([Distribution]::SelectHttps($UI64.Link))'
     Checksum = '$($UI64.Checksum)'
 }
 "@

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+	<metadata>
+		<id>google-chrome</id>
+		<version>1.0.0</version>
+		<packageSourceUrl>https://github.com/sangafabrice/choco-packages/tree/google-chrome</packageSourceUrl>
+		<owners>sangafabrice</owners>
+		<title>Google Chrome Legacy</title>
+		<authors>Google LLC</authors>
+		<projectUrl>https://www.google.com/chrome/</projectUrl>
+		<iconUrl>https://rawcdn.githack.com/sangafabrice/choco-packages/148786c35aee794f9ffc6bb739eb15516b618346/icon.svg</iconUrl>
+		<copyright>© $year$ Google LLC.</copyright>
+		<licenseUrl>https://www.google.it/intl/en/chrome/browser/privacy/eula_text.html</licenseUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<tags>google chrome web internet browser omaha</tags>
+		<summary>Google Chrome is a modern web browser that provides fast and secure browsing.</summary>
+		<description>
+Google **Chrome** is a modern web browser that provides fast and secure browsing.
+
+## Notes
+
+- This package uses Chrome standalone installer and installs the 32-bit on 32-bit OSes and the 64-bit version on 64-bit OSes. If this package is installed on a 64-bit OS and the 32-bit version of Chrome is already installed, the package keeps installing/updating the 32-bit version of Google Chrome.
+- This package always installs the latest version of Google Chrome, regardless of the version specified in the package. Google does not officially offer older versions of Chrome for download. Because of this, it is required to use `choco (install|upgrade) avast-secure --force` switch to force the install of the latest version.
+		</description>
+		<releaseNotes>There are no release notes available for this software.</releaseNotes>
+		<dependencies>
+		<dependency id="chocolatey-core.extension" version="1.1.0" />
+		<dependency id="download-info.extension" version="3.1.6" />
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="tools\**" target="tools" />
+	</files>
+</package>

@@ -6,7 +6,7 @@ $Private:ToolDir = Split-Path $MyInvocation.MyCommand.Definition
 	UnzipLocation = $ToolDir
 	FileType      = 'exe'
 	SoftwareName  = $Name
-	SilentArgs    = '--chrome --do-not-launch-chrome --hide-browser-override --show-developer-mode --suppress-first-run-bubbles --default-search-id=1001 --default-search=google.com --adblock-mode-default=1'
+	SilentArgs    = '--verbose-logging --do-not-launch-chrome --channel=stable'
 } + (
 	Get-UpdateInfo |
 	ForEach-Object {

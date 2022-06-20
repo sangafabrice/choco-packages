@@ -2,7 +2,7 @@
 . "$(Split-Path $MyInvocation.MyCommand.Definition)\helpers.ps1"
 Switch (Get-SilentUninstallString) {
     { [string]::IsNullOrEmpty($_) } { 
-        Write-Warning 'Avast Secure Browser is already uninstalled.'
+        Write-Warning 'Google Chrome is already uninstalled.'
     }
 	Default {
         Stop-ExeProcess
