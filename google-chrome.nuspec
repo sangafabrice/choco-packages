@@ -8,7 +8,7 @@
 		<title>Google Chrome Legacy</title>
 		<authors>Google LLC</authors>
 		<projectUrl>https://www.google.com/chrome/</projectUrl>
-		<iconUrl>https://rawcdn.githack.com/sangafabrice/choco-packages/148786c35aee794f9ffc6bb739eb15516b618346/icon.svg</iconUrl>
+		<iconUrl>https://rawcdn.githack.com/sangafabrice/choco-packages/4a3f99c43c1c2529ebb27f5a6b68b4c2efa5d4eb/icon.svg</iconUrl>
 		<copyright>© $year$ Google LLC.</copyright>
 		<licenseUrl>https://www.google.it/intl/en/chrome/browser/privacy/eula_text.html</licenseUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
