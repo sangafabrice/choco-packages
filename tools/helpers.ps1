@@ -82,10 +82,5 @@ Function Get-UpdateInfo {
 		) { { $Null -notin @($_.Version,$_.Link,$_.Checksum) } { Return $_ } }
 		Throw
 	}
-	Catch {
-		Switch ($ExecutableType) {
-			'x64'   { $UpdateInfo64 }
-			Default { $UpdateInfo }
-		}
-	}
+	Catch { Switch ($ExecutableType) { 'x64' { $UpdateInfo64 } Default { $UpdateInfo } } }
 }
