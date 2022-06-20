@@ -1,4 +1,4 @@
 <!-- 
 The version in the NuSpec is the build version of the package.
 The package version mentionned here is generated at deployment.
---><package id="google-chrome" version="102.0.5005.115" version32="102.0.5005.115" />
+--><package id="ytube-dl" version="2021.12.17" />

@@ -1,52 +1,14 @@
 $UpdateInfo = @{
-    Version  = '102.0.5005.115'
-    Link     = 'https://edgedl.me.gvt1.com/edgedl/release2/chrome/adc3ziyugsggp3yfi4baggeg6osq_102.0.5005.115/102.0.5005.115_chrome_installer.exe'
-    Checksum = 'B45C5ECE01DC24253938B02775612ECCC4F8ABDF3E4A089D4355D73756F82A57'
-}
-$UpdateInfo64 = @{
-    Version  = '102.0.5005.115'
-    Link     = 'https://edgedl.me.gvt1.com/edgedl/release2/chrome/aceomm4bgo4gjd56jq2ebspjaama_102.0.5005.115/102.0.5005.115_chrome_installer.exe'
-    Checksum = '0E6C7AF39B7BDDA56B7AC5E2E0CFD344E891A1B2D69F042662EE15AE36C2FB9F'
+    Version  = '2021.12.17'
+    Link     = 'https://github.com/ytdl-org/youtube-dl/releases/download/2021.12.17/youtube-dl.exe'
+    Checksum = '24cc5ad86c35f40ff8f864f7098ebf50a0a57375216732b4e27a3fffa5de7dbe0f40bd41005e53fe1b2f0713df3f00182b8b552a785ccc41ee968144fe03075c'
 }
 
 ## Current Install Helper Functions and Variables
 
-$Name = 'Google Chrome*'
+$Executable = "${Env:ChocolateyInstall}\bin\youtube-dl.exe"
 
-$ShimName = 'chrome'
-
-$OSArch = $(If ($(
-	Try { (Get-WmiObject Win32_OperatingSystem).OSArchitecture -match '64' }
-	Catch { [Environment]::Is64BitOperatingSystem }
-)) { 'x64' } Else { 'x86' })
-
-Filter Get-Executable {
-	("$((Get-UninstallRegistryKey -SoftwareName $Name).InstallLocation)\$($ShimName).exe" |
-	Get-Item -ErrorAction SilentlyContinue).FullName
-}
-
-$ExecutableType = (& {
-	Switch (Get-Executable) {
-		{ ![string]::IsNullOrEmpty($_) } {
-			$PEHeaderOffset = New-Object Byte[] 2
-			$PESignature = New-Object Byte[] 4
-			$MachineType = New-Object Byte[] 2
-			$FileStream = New-Object System.IO.FileStream -ArgumentList $_,'Open','Read','ReadWrite'
-			$FileStream.Position = 0x3c
-			[void] $FileStream.Read($PEHeaderOffset, 0, 2)
-			$FileStream.Position = [System.BitConverter]::ToUInt16($PEHeaderOffset, 0)
-			[void] $FileStream.Read($PESignature, 0, 4)
-			[void] $FileStream.Read($MachineType, 0, 2)
-			Switch ([System.BitConverter]::ToUInt16($MachineType, 0)){
-				0x8664  { 'x64' }
-				0x14c   { 'x86' }
-				Default { $OSArch }
-			}
-			$FileStream.Close()
-		}
-		Default { $OSArch }
-	}
-})
+Filter Get-Executable { (Get-Item $Executable -ErrorAction SilentlyContinue).FullName }
 
 Filter Get-Version {
 	[version] $(Switch (Get-Executable) {
@@ -60,33 +22,23 @@ Filter Test-IsOutdated {
 	(Get-Version) -lt $OpVersion 
 }
 
-Filter Get-SilentUninstallString {
-	(Get-UninstallRegistryKey -SoftwareName $Name).UninstallString |
-	ForEach-Object { If (![string]::IsNullOrEmpty($_)) { ". $_ --force-uninstall" } }
-}
-
-Filter Stop-ExeProcess { 
-	Get-Process $ShimName -ErrorAction SilentlyContinue | 
-	Stop-Process -Force
-}
-
 Function Get-UpdateInfo {
 	Try {
 		Switch (
 			Get-DownloadInfo -PropertyList @{
-				UpdateServiceURL = 'https://update.googleapis.com/service/update2'
-				ApplicationID    = '{8A69D345-D564-463c-AFF1-A69D9E530F96}'
-				OwnerBrand       = "$(Switch ($ExecutableType) { 'x64' { 'YTUH' } Default { 'GGLS' } })"
-				ApplicationSpec  = "$(Switch ($ExecutableType) { 'x64' { 'x64-stable-statsdef_1' } Default { 'stable-arch_x86-statsdef_1' } })"
-			} -From Omaha
-		) { { $Null -notin @($_.Version,$_.Link,$_.Checksum) } { 
+				RepositoryId = 'ytdl-org/youtube-dl'
+        		AssetPattern = 'youtube-dl.exe$|SHA2-512SUMS$'
+			}
+		) { { $Null -notin @($_.Version,$_.Link) } { 
 			Return [PSCustomObject] @{
-				Version = $_.Version
-				Link = $_.Link.Where({ "$_" -like 'https://*' })[0]
-				Checksum = $_.Checksum
+				Version  = $_.Version
+				Link     = $_.Link.Where({$_.Url -like '*.exe'}).Url
+				Checksum = (((Invoke-WebRequest "$($_.Link.Where({$_.Url -like '*512SUMS'}).Url)").Content |
+					ForEach-Object { [char] $_ }) -join '' -split "`n" |
+					ConvertFrom-String).Where({$_.P2 -ieq 'youtube-dl.exe'}).P1
 			}
 		} }
 		Throw
 	}
-	Catch { Switch ($ExecutableType) { 'x64' { $UpdateInfo64 } Default { $UpdateInfo } } }
+	Catch { $UpdateInfo }
 }

@@ -2,23 +2,11 @@ Import-Module "$PSScriptRoot\DownloadInfo" -Force
 
 Class Distribution {
     Static [hashtable] $PropertyList = @{
-        UpdateServiceURL = 'https://update.googleapis.com/service/update2'
-        ApplicationID    = '{8A69D345-D564-463c-AFF1-A69D9E530F96}'
+        RepositoryId = 'ytdl-org/youtube-dl'
+        AssetPattern = 'youtube-dl.exe$|SHA2-512SUMS$'
     }
-    
-    Static [hashtable] $PtyList32 = $(([Distribution]::PropertyList) + @{
-        OwnerBrand      = 'GGLS'
-        ApplicationSpec = 'stable-arch_x86-statsdef_1'
-    })
 
-    Static [hashtable] $PtyList64 = $(([Distribution]::PropertyList) + @{
-        OwnerBrand      = 'YTUH'
-        ApplicationSpec = 'x64-stable-statsdef_1'
-    })
-
-    Static $UpdateInfo32 = $(Get-DownloadInfo -PropertyList ([Distribution]::PtyList32) -From Omaha)
-
-    Static $UpdateInfo64 = $(Get-DownloadInfo -PropertyList ([Distribution]::PtyList64) -From Omaha)
+    Static $UpdateInfo32 = $(Get-DownloadInfo -PropertyList ([Distribution]::PropertyList))
 
     Static [string] $PackageName = ((Get-Item "$(& { $PSScriptRoot })\*.nuspec").Name -replace '\.nuspec$')
     
@@ -27,7 +15,7 @@ Class Distribution {
         $Result = $(& {
             Try {
                 If ($Version -is [scriptblock]) { $Version = & $Version }
-                If ($Version -notmatch '^[0-9]+(\.[0-9]+){3}$') { Throw }
+                If ($Version -notmatch '^[0-9]+(\.[0-9]+){2}$') { Throw }
                 Invoke-Expression "choco pack --version=$Version $Properties" > $Null 2>&1
                 If ($LASTEXITCODE -eq 1) { Throw }
                 Return "$([Distribution]::PackageName).$Version.nupkg"
@@ -43,14 +31,11 @@ Class Distribution {
         $GetXmlContent = { [xml] (Get-Content .\pkg.xml -Raw) }
         $PkgXml = & $GetXmlContent
         @{
-            Current = [version] $PkgXml.package.version
-            Current32 = [version] $PkgXml.package.version32
-            Download = [version] ([Distribution]::UpdateInfo64).Version
-            Download32 = [version] ([Distribution]::UpdateInfo32).Version
+            Current  = [version] $PkgXml.package.version
+            Download = [version] ([Distribution]::UpdateInfo32).Version
         } | ForEach-Object {
-            If ($_.Current -le $_.Download -and $_.Current32 -le $_.Download32) {
+            If ($_.Current -le $_.Download) {
                 $PkgXml.package.version = "$($_.Download)"
-                $PkgXml.package.version32 = "$($_.Download32)"
                 $PkgXml.OuterXml | Out-File .\pkg.xml
                 '.\tools\helpers.ps1' |
                 ForEach-Object {
@@ -66,21 +51,23 @@ Class Distribution {
         Return $Result
     }
 
-    Static [string] SelectHttps([uri[]] $Link) { Return $Link.Where({ "$_" -like 'https://*' })[0] }
+    Static [string] SelectLink($Link) { Return $Link.Where({$_.Url -like '*.exe'}).Url }
+
+    Static [string] SelectChecksum($Link) { 
+        Return (
+            (((Invoke-WebRequest "$($Link.Where({$_.Url -like '*512SUMS'}).Url)").Content |
+            ForEach-Object { [char] $_ }) -join '' -split "`n" |
+            ConvertFrom-String).Where({$_.P2 -ieq 'youtube-dl.exe'}).P1
+        )
+    }
 
     Static [string] UpdateInfo() {
         $UI32 = [Distribution]::UpdateInfo32
-        $UI64 = [Distribution]::UpdateInfo64
         Return @"
 `$UpdateInfo = @{
     Version  = '$($UI32.Version)'
-    Link     = '$([Distribution]::SelectHttps($UI32.Link))'
-    Checksum = '$($UI32.Checksum)'
-}
-`$UpdateInfo64 = @{
-    Version  = '$($UI64.Version)'
-    Link     = '$([Distribution]::SelectHttps($UI64.Link))'
-    Checksum = '$($UI64.Checksum)'
+    Link     = '$([Distribution]::SelectLink($UI32.Link))'
+    Checksum = '$([Distribution]::SelectChecksum($UI32.Link))'
 }
 "@
     }
@@ -92,7 +79,8 @@ Filter New-Package {
         Create a nuget package
     #>
 
-    [Distribution]::NewNugetPackage([Distribution]::UpdateVersion(), "year=$((Get-Date).Year)")
+    [Distribution]::UpdateVersion() |
+    ForEach-Object { [Distribution]::NewNugetPackage($_, "year=$((Get-Date).Year) version=$_") }
 }
 
 Filter Publish-Package {
