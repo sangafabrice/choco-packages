@@ -79,7 +79,10 @@ Function Get-UpdateInfo {
 				OwnerBrand       = '2101'
 				OSArch           = $ExecutableType
 			} -From Omaha
-		) { { $Null -notin @($_.Version,$_.Link,$_.Checksum) } { Return $_ } }
+		) { { $Null -notin @($_.Version,$_.Link,$_.Checksum) } {
+			$_.Link = "$($_.Link)"
+			Return $_
+		} }
 		Throw
 	}
 	Catch { Switch ($ExecutableType) { 'x64' { $UpdateInfo64 } Default { $UpdateInfo } } }
