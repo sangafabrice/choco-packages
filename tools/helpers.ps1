@@ -79,12 +79,9 @@ Function Get-UpdateInfo {
 				OwnerBrand       = "$(Switch ($ExecutableType) { 'x64' { 'YTUH' } Default { 'GGLS' } })"
 				ApplicationSpec  = "$(Switch ($ExecutableType) { 'x64' { 'x64-stable-statsdef_1' } Default { 'stable-arch_x86-statsdef_1' } })"
 			} -From Omaha
-		) { { $Null -notin @($_.Version,$_.Link,$_.Checksum) } { 
-			Return [PSCustomObject] @{
-				Version = $_.Version
-				Link = $_.Link.Where({ "$_" -like 'https://*' })[0]
-				Checksum = $_.Checksum
-			}
+		) { { $Null -notin @($_.Version,$_.Link,$_.Checksum) } {
+			$_.Link = "$($_.Link.Where({ "$_" -like 'https://*' })[0])"
+			Return $_
 		} }
 		Throw
 	}
