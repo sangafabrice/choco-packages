@@ -1,9 +1,9 @@
-$UpdateInfo = @{
+$UpdateInfo = [PSCustomObject] @{
     Version  = '102.0.5005.115'
     Link     = 'https://edgedl.me.gvt1.com/edgedl/release2/chrome/adc3ziyugsggp3yfi4baggeg6osq_102.0.5005.115/102.0.5005.115_chrome_installer.exe'
     Checksum = 'B45C5ECE01DC24253938B02775612ECCC4F8ABDF3E4A089D4355D73756F82A57'
 }
-$UpdateInfo64 = @{
+$UpdateInfo64 = [PSCustomObject] @{
     Version  = '102.0.5005.115'
     Link     = 'https://edgedl.me.gvt1.com/edgedl/release2/chrome/aceomm4bgo4gjd56jq2ebspjaama_102.0.5005.115/102.0.5005.115_chrome_installer.exe'
     Checksum = '0E6C7AF39B7BDDA56B7AC5E2E0CFD344E891A1B2D69F042662EE15AE36C2FB9F'
