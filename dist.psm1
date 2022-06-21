@@ -64,12 +64,12 @@ Class Distribution {
         $UI32 = [Distribution]::UpdateInfo32
         $UI64 = [Distribution]::UpdateInfo64
         Return @"
-`$UpdateInfo = @{
+`$UpdateInfo = [PSCustomObject] @{
     Version  = '$($UI32.Version)'
     Link     = '$($UI32.Link)'
     Checksum = '$($UI32.Checksum)'
 }
-`$UpdateInfo64 = @{
+`$UpdateInfo64 = [PSCustomObject] @{
     Version  = '$($UI64.Version)'
     Link     = '$($UI64.Link)'
     Checksum = '$($UI64.Checksum)'
