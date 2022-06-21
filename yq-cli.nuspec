@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+	<metadata>
+		<id>yq-cli</id>
+		<version>1.0.0</version>
+		<packageSourceUrl>https://github.com/sangafabrice/choco-packages/tree/yq-cli</packageSourceUrl>
+		<owners>sangafabrice</owners>
+		<title>YQ CLI</title>
+		<authors>Mike Farah</authors>
+		<projectUrl>https://mikefarah.gitbook.io/yq/</projectUrl>
+		<iconUrl>https://rawcdn.githack.com/sangafabrice/choco-packages/4a3f99c43c1c2529ebb27f5a6b68b4c2efa5d4eb/icon.svg</iconUrl>
+		<copyright>© $year$ Mike Farah.</copyright>
+		<licenseUrl>https://rawcdn.githack.com/mikefarah/yq/f63d76f006adc3e33bf217ccf4e4ed51769cd4bd/LICENSE</licenseUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<tags>yq cli yaml github</tags>
+		<summary>Yq is a lightweight and portable command-line YAML processor.</summary>
+		<description>Yq is a lightweight and portable command-line YAML processor.</description>
+		<releaseNotes>https://github.com/mikefarah/yq/releases/tag/v$version$</releaseNotes>
+		<dependencies>
+		<dependency id="chocolatey-core.extension" version="1.1.0" />
+		<dependency id="download-info.extension" version="3.1.6" />
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="tools\**" target="tools" />
+	</files>
+</package>

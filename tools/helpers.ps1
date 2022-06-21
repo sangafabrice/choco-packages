@@ -1,56 +1,28 @@
-$UpdateInfo = @{
-    Version  = '102.0.5005.115'
-    Link     = 'https://edgedl.me.gvt1.com/edgedl/release2/chrome/adc3ziyugsggp3yfi4baggeg6osq_102.0.5005.115/102.0.5005.115_chrome_installer.exe'
-    Checksum = 'B45C5ECE01DC24253938B02775612ECCC4F8ABDF3E4A089D4355D73756F82A57'
+$UpdateInfo = [PSCustomObject] @{
+    Version  = '4.25.2'
+    Link     = 'https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_windows_386.exe'
+    Checksum = 'cbb4b89afbf42083b7c0f0576d88e35cf88e9cf926ffe06babe1e655bd41c64c2ef077eed22bdc7c8d3a081dcc4f26213305b9c408c77f98ce9caa48fbb676b1'
 }
-$UpdateInfo64 = @{
-    Version  = '102.0.5005.115'
-    Link     = 'https://edgedl.me.gvt1.com/edgedl/release2/chrome/aceomm4bgo4gjd56jq2ebspjaama_102.0.5005.115/102.0.5005.115_chrome_installer.exe'
-    Checksum = '0E6C7AF39B7BDDA56B7AC5E2E0CFD344E891A1B2D69F042662EE15AE36C2FB9F'
+$UpdateInfo64 = [PSCustomObject] @{
+    Version  = '4.25.2'
+    Link     = 'https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_windows_amd64.exe'
+    Checksum = 'f55f9b4030a99fa2e3d5d08931b1213056c0597a41cedd58c379f3455a79c72cdd5db36ee653b5dbec952c4c5f5e86ae5ec68dd4befd5f1beb693f8e83c20702'
 }
 
 ## Current Install Helper Functions and Variables
 
-$Name = 'Google Chrome*'
-
-$ShimName = 'chrome'
+$Executable = "${Env:ChocolateyInstall}\bin\yq.exe"
 
 $OSArch = $(If ($(
 	Try { (Get-WmiObject Win32_OperatingSystem).OSArchitecture -match '64' }
 	Catch { [Environment]::Is64BitOperatingSystem }
 )) { 'x64' } Else { 'x86' })
 
-Filter Get-Executable {
-	("$((Get-UninstallRegistryKey -SoftwareName $Name).InstallLocation)\$($ShimName).exe" |
-	Get-Item -ErrorAction SilentlyContinue).FullName
-}
-
-$ExecutableType = (& {
-	Switch (Get-Executable) {
-		{ ![string]::IsNullOrEmpty($_) } {
-			$PEHeaderOffset = New-Object Byte[] 2
-			$PESignature = New-Object Byte[] 4
-			$MachineType = New-Object Byte[] 2
-			$FileStream = New-Object System.IO.FileStream -ArgumentList $_,'Open','Read','ReadWrite'
-			$FileStream.Position = 0x3c
-			[void] $FileStream.Read($PEHeaderOffset, 0, 2)
-			$FileStream.Position = [System.BitConverter]::ToUInt16($PEHeaderOffset, 0)
-			[void] $FileStream.Read($PESignature, 0, 4)
-			[void] $FileStream.Read($MachineType, 0, 2)
-			Switch ([System.BitConverter]::ToUInt16($MachineType, 0)){
-				0x8664  { 'x64' }
-				0x14c   { 'x86' }
-				Default { $OSArch }
-			}
-			$FileStream.Close()
-		}
-		Default { $OSArch }
-	}
-})
+Filter Get-Executable { (Get-Item $Executable -ErrorAction SilentlyContinue).FullName }
 
 Filter Get-Version {
 	[version] $(Switch (Get-Executable) {
-		{ ![string]::IsNullOrEmpty($_) } { (Get-ItemProperty ($_)).VersionInfo.ProductVersion }
+		{ ![string]::IsNullOrEmpty($_) } { ((. $_ --version) -split ' ')[-1] }
 		Default { '0.0.0.0' }
 	})
 }
@@ -60,33 +32,34 @@ Filter Test-IsOutdated {
 	(Get-Version) -lt $OpVersion 
 }
 
-Filter Get-SilentUninstallString {
-	(Get-UninstallRegistryKey -SoftwareName $Name).UninstallString |
-	ForEach-Object { If (![string]::IsNullOrEmpty($_)) { ". $_ --force-uninstall" } }
-}
-
-Filter Stop-ExeProcess { 
-	Get-Process $ShimName -ErrorAction SilentlyContinue | 
-	Stop-Process -Force
-}
-
 Function Get-UpdateInfo {
 	Try {
+		$ExeName = "yq_windows_$(Switch ($OSArch) { 'x64' { 'amd64' } Default { '386' } }).exe"
 		Switch (
 			Get-DownloadInfo -PropertyList @{
-				UpdateServiceURL = 'https://update.googleapis.com/service/update2'
-				ApplicationID    = '{8A69D345-D564-463c-AFF1-A69D9E530F96}'
-				OwnerBrand       = "$(Switch ($ExecutableType) { 'x64' { 'YTUH' } Default { 'GGLS' } })"
-				ApplicationSpec  = "$(Switch ($ExecutableType) { 'x64' { 'x64-stable-statsdef_1' } Default { 'stable-arch_x86-statsdef_1' } })"
-			} -From Omaha
-		) { { $Null -notin @($_.Version,$_.Link,$_.Checksum) } { 
+				RepositoryId = 'mikefarah/yq'
+				AssetPattern = "$ExeName$|checksums.*$"
+			}
+		) { { $Null -notin @($_.Version,$_.Link) } {
+			$SelectLink = {
+				Param($Obj, $FileName)
+				$Obj.Link.Url.Where({ "$Obj" -like "*$FileName" })
+			}
+			$RqstContent = {
+				Param($Obj, $FileName)
+				((Invoke-WebRequest "$(& $SelectLink $Obj $FileName)").Content |
+				ForEach-Object { [char] $_ }) -join '' -split "`n"
+			}
+			$ShaIndex = "P$([array]::IndexOf((& $RqstContent $_ 'checksums_hashes_order'),'SHA-512') + 2)"
 			Return [PSCustomObject] @{
-				Version = $_.Version
-				Link = $_.Link.Where({ "$_" -like 'https://*' })[0]
-				Checksum = $_.Checksum
+				Version = $_.Version.Substring(1)
+				Link = & $SelectLink $_ $ExeName
+				Checksum = $(& $RqstContent $_ 'checksums' | ConvertFrom-String |
+					Select-Object P1,$ShaIndex |
+					Where-Object P1 -Like $ExeName).$ShaIndex
 			}
 		} }
 		Throw
 	}
-	Catch { Switch ($ExecutableType) { 'x64' { $UpdateInfo64 } Default { $UpdateInfo } } }
+	Catch { Switch ($OSArch) { 'x64' { $UpdateInfo64 } Default { $UpdateInfo } } }
 }

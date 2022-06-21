@@ -2,23 +2,11 @@ Import-Module "$PSScriptRoot\DownloadInfo" -Force
 
 Class Distribution {
     Static [hashtable] $PropertyList = @{
-        UpdateServiceURL = 'https://update.googleapis.com/service/update2'
-        ApplicationID    = '{8A69D345-D564-463c-AFF1-A69D9E530F96}'
+        RepositoryId = 'mikefarah/yq'
+        AssetPattern = "yq_windows_amd64.exe$|yq_windows_386.exe$|checksums.*$"
     }
-    
-    Static [hashtable] $PtyList32 = $(([Distribution]::PropertyList) + @{
-        OwnerBrand      = 'GGLS'
-        ApplicationSpec = 'stable-arch_x86-statsdef_1'
-    })
 
-    Static [hashtable] $PtyList64 = $(([Distribution]::PropertyList) + @{
-        OwnerBrand      = 'YTUH'
-        ApplicationSpec = 'x64-stable-statsdef_1'
-    })
-
-    Static $UpdateInfo32 = $(Get-DownloadInfo -PropertyList ([Distribution]::PtyList32) -From Omaha)
-
-    Static $UpdateInfo64 = $(Get-DownloadInfo -PropertyList ([Distribution]::PtyList64) -From Omaha)
+    Static $UpdateInfo_ = $(Get-DownloadInfo -PropertyList ([Distribution]::PropertyList))
 
     Static [string] $PackageName = ((Get-Item "$(& { $PSScriptRoot })\*.nuspec").Name -replace '\.nuspec$')
     
@@ -27,7 +15,7 @@ Class Distribution {
         $Result = $(& {
             Try {
                 If ($Version -is [scriptblock]) { $Version = & $Version }
-                If ($Version -notmatch '^[0-9]+(\.[0-9]+){3}$') { Throw }
+                If ($Version -notmatch '^[0-9]+(\.[0-9]+){2}$') { Throw }
                 Invoke-Expression "choco pack --version=$Version $Properties" > $Null 2>&1
                 If ($LASTEXITCODE -eq 1) { Throw }
                 Return "$([Distribution]::PackageName).$Version.nupkg"
@@ -44,13 +32,10 @@ Class Distribution {
         $PkgXml = & $GetXmlContent
         @{
             Current = [version] $PkgXml.package.version
-            Current32 = [version] $PkgXml.package.version32
-            Download = [version] ([Distribution]::UpdateInfo64).Version
-            Download32 = [version] ([Distribution]::UpdateInfo32).Version
+            Download = [version] ([Distribution]::UpdateInfo_).Version.Substring(1)
         } | ForEach-Object {
-            If ($_.Current -le $_.Download -and $_.Current32 -le $_.Download32) {
+            If ($_.Current -le $_.Download) {
                 $PkgXml.package.version = "$($_.Download)"
-                $PkgXml.package.version32 = "$($_.Download32)"
                 $PkgXml.OuterXml | Out-File .\pkg.xml
                 '.\tools\helpers.ps1' |
                 ForEach-Object {
@@ -66,21 +51,35 @@ Class Distribution {
         Return $Result
     }
 
-    Static [string] SelectHttps([uri[]] $Link) { Return $Link.Where({ "$_" -like 'https://*' })[0] }
+    Static [string] SelectLink($Info, $FileName) { Return $Info.Link.Url.Where({ "$_" -like "*$FileName" }) }
+
+    Static [string[]] GetRequestContent($Info, $FileName) {
+        Return ((Invoke-WebRequest "$([Distribution]::SelectLink($Info, $FileName))").Content |
+			ForEach-Object { [char] $_ }) -join '' -split "`n"
+    }
+
+    Static [string] SelectChecksum($Info, $ExeName) { 
+        Return $(
+            $ShaIndex = "P$([array]::IndexOf([Distribution]::GetRequestContent($Info, 'checksums_hashes_order'),'SHA-512') + 2)"
+            ([Distribution]::GetRequestContent($Info, 'checksums') | ConvertFrom-String |
+            Select-Object P1,$ShaIndex |
+            Where-Object P1 -Like $ExeName).$ShaIndex
+        )
+    }
 
     Static [string] UpdateInfo() {
-        $UI32 = [Distribution]::UpdateInfo32
-        $UI64 = [Distribution]::UpdateInfo64
+        $UI = [Distribution]::UpdateInfo_
+        $VersionString = $UI.Version.Substring(1)
         Return @"
-`$UpdateInfo = @{
-    Version  = '$($UI32.Version)'
-    Link     = '$([Distribution]::SelectHttps($UI32.Link))'
-    Checksum = '$($UI32.Checksum)'
+`$UpdateInfo = [PSCustomObject] @{
+    Version  = '$VersionString'
+    Link     = '$([Distribution]::SelectLink($UI, 'yq_windows_386.exe'))'
+    Checksum = '$([Distribution]::SelectChecksum($UI, 'yq_windows_386.exe'))'
 }
-`$UpdateInfo64 = @{
-    Version  = '$($UI64.Version)'
-    Link     = '$([Distribution]::SelectHttps($UI64.Link))'
-    Checksum = '$($UI64.Checksum)'
+`$UpdateInfo64 = [PSCustomObject] @{
+    Version  = '$VersionString'
+    Link     = '$([Distribution]::SelectLink($UI, 'yq_windows_amd64.exe'))'
+    Checksum = '$([Distribution]::SelectChecksum($UI, 'yq_windows_amd64.exe'))'
 }
 "@
     }
@@ -92,7 +91,8 @@ Filter New-Package {
         Create a nuget package
     #>
 
-    [Distribution]::NewNugetPackage([Distribution]::UpdateVersion(), "year=$((Get-Date).Year)")
+    [Distribution]::UpdateVersion() |
+    ForEach-Object { [Distribution]::NewNugetPackage($_, "year=$((Get-Date).Year) version=$_") }
 }
 
 Filter Publish-Package {
