@@ -64,7 +64,7 @@ Class Distribution {
     Static [string] UpdateInfo() {
         $UI32 = [Distribution]::UpdateInfo32
         Return @"
-`$UpdateInfo = @{
+`$UpdateInfo = [PSCustomObject] @{
     Version  = '$($UI32.Version)'
     Link     = '$([Distribution]::SelectLink($UI32.Link))'
     Checksum = '$([Distribution]::SelectChecksum($UI32.Link))'

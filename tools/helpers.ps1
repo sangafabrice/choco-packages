@@ -1,4 +1,4 @@
-$UpdateInfo = @{
+$UpdateInfo = [PSCustomObject] @{
     Version  = '2021.12.17'
     Link     = 'https://github.com/ytdl-org/youtube-dl/releases/download/2021.12.17/youtube-dl.exe'
     Checksum = '24cc5ad86c35f40ff8f864f7098ebf50a0a57375216732b4e27a3fffa5de7dbe0f40bd41005e53fe1b2f0713df3f00182b8b552a785ccc41ee968144fe03075c'
