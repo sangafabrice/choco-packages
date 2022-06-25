@@ -1,4 +1,4 @@
 <!-- 
 The version in the NuSpec is the build version of the package.
 The package version mentionned here is generated at deployment.
---><package id="avast-secure" version="102.0.16817.63" version32="102.0.16815.63" />
+--><package id="avastsecure" version="102.1.17190.115" version32="102.1.17189.115" />

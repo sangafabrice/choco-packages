@@ -1,12 +1,12 @@
 $UpdateInfo = [PSCustomObject] @{
-    Version  = '102.0.16815.63'
-    Link     = 'https://browser-update.avast.com/browser/win/x86/102.0.16815.63/AvastBrowserInstaller.exe'
-    Checksum = '7EE73EF78AACDA80763A22B5FD552EDB17B9EDA58A83014072806DBD7290ACD1'
+    Version  = '102.1.17189.115'
+    Link     = 'https://browser-update.avast.com/browser/win/x86/102.1.17189.115/AvastBrowserInstaller.exe'
+    Checksum = 'F9023B00E3B0A7E827A74995751C89675D2A3B54770F19EA715A56A95691B26E'
 }
 $UpdateInfo64 = [PSCustomObject] @{
-    Version  = '102.0.16817.63'
-    Link     = 'https://browser-update.avast.com/browser/win/x64/102.0.16817.63/AvastBrowserInstaller.exe'
-    Checksum = 'BED8A807BD4E9BDD9F29AA91C93580AFDCBED7ABC35250BF6766825998F98726'
+    Version  = '102.1.17190.115'
+    Link     = 'https://browser-update.avast.com/browser/win/x64/102.1.17190.115/AvastBrowserInstaller.exe'
+    Checksum = 'C233DE64AF54D3DE82E2AB5A7858D0F38FFDAC173A511909EB8DA129EB55EC11'
 }
 
 ## Current Install Helper Functions and Variables
