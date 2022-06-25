@@ -2,13 +2,13 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
 	<metadata>
 		<id>avastsecure</id>
-		<version>2.0.1</version>
+		<version>3.0.0</version>
 		<packageSourceUrl>https://github.com/sangafabrice/choco-packages/tree/avastsecure</packageSourceUrl>
 		<owners>sangafabrice</owners>
 		<title>Avast Secure Browser</title>
 		<authors>Avast Software</authors>
 		<projectUrl>https://www.avast.com/en-us/secure-browser#pc</projectUrl>
-		<iconUrl>https://rawcdn.githack.com/sangafabrice/choco-packages/148786c35aee794f9ffc6bb739eb15516b618346/icon.png</iconUrl>
+		<iconUrl>https://rawcdn.githack.com/sangafabrice/choco-packages/f3f1c1aba27e253461cc4ddd677a68c3cace0e0b/icon.png</iconUrl>
 		<copyright>© $year$ Avast Software s.r.o.</copyright>
 		<licenseUrl>https://www.avast.com/en-us/eula#pc</licenseUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
