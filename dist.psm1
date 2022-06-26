@@ -76,6 +76,28 @@ Class Distribution {
 }
 "@
     }
+
+    Static [void] UpdateReadme() {
+        Push-Location $PSScriptRoot
+        $Nuspec = [xml] (Get-Content .\*.nuspec -Raw)
+            $PkgXml = [xml] (Get-Content .\pkg.xml -Raw)
+        Set-Content ".\README.md" -Value @"
+# **$($Nuspec.package.metadata.title)**
+[![Package Version](https://img.shields.io/badge/version-$($PkgXml.package.version)-brightgreen)](https://community.chocolatey.org/packages/$($Nuspec.package.metadata.id))
+
+##### Author: Fabrice Sanga
+<br/>
+
+$(($Nuspec.package.metadata.description) -replace "`#`# Notes","<br/>`n`n## **Notes**")
+<br/>
+
+![Package Build Version](https://img.shields.io/badge/build-$($Nuspec.package.metadata.version)-blue)
+"@
+        git add *.nuspec pkg.xml .\README.md
+        git commit -m "Update Readme: $($Nuspec.package.metadata.version)"
+        git push
+        Pop-Location
+    }
 }
 
 Filter New-Package {
@@ -108,6 +130,15 @@ Filter Publish-Package {
     Catch { "ERROR: $($_.Exception.Message)" }
 }
 
+Filter Update-Readme {
+    <#
+    .SYNOPSIS
+        Update Readme.md
+    #>
+
+    [Distribution]::UpdateReadme()
+}
+
 Filter Deploy-Package {
     <#
     .SYNOPSIS
@@ -115,6 +146,7 @@ Filter Deploy-Package {
     #>
 
     Push-Location $PSScriptRoot
+    Update-Readme
     New-Package |
     ForEach-Object {
         Publish-Package $_
