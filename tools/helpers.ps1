@@ -1,12 +1,12 @@
 $UpdateInfo = [PSCustomObject] @{
-    Version  = '4.25.2'
-    Link     = 'https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_windows_386.exe'
-    Checksum = 'cbb4b89afbf42083b7c0f0576d88e35cf88e9cf926ffe06babe1e655bd41c64c2ef077eed22bdc7c8d3a081dcc4f26213305b9c408c77f98ce9caa48fbb676b1'
+    Version  = '4.25.3'
+    Link     = 'https://github.com/mikefarah/yq/releases/download/v4.25.3/yq_windows_386.exe'
+    Checksum = 'e7a0ebd6c8eb207d2fab444291df032f4a936fd19d3079b49106862643dcefa397617a3bc692b596463e352847a8106e9551945cf20483581846a747c7b5c7b2'
 }
 $UpdateInfo64 = [PSCustomObject] @{
-    Version  = '4.25.2'
-    Link     = 'https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_windows_amd64.exe'
-    Checksum = 'f55f9b4030a99fa2e3d5d08931b1213056c0597a41cedd58c379f3455a79c72cdd5db36ee653b5dbec952c4c5f5e86ae5ec68dd4befd5f1beb693f8e83c20702'
+    Version  = '4.25.3'
+    Link     = 'https://github.com/mikefarah/yq/releases/download/v4.25.3/yq_windows_amd64.exe'
+    Checksum = '70344bf81bcdfa4e372242133cf37e6ca0a3b7056c604354d021f751ad59bbe8771c5bbd97207a2894e94f3db79e262fa8cb91c83fe61a033966a21e75684fb9'
 }
 
 ## Current Install Helper Functions and Variables
@@ -43,7 +43,7 @@ Function Get-UpdateInfo {
 		) { { $Null -notin @($_.Version,$_.Link) } {
 			$SelectLink = {
 				Param($Obj, $FileName)
-				$Obj.Link.Url.Where({ "$Obj" -like "*$FileName" })
+				$Obj.Link.Url.Where({ "$_" -like "*$FileName" })
 			}
 			$RqstContent = {
 				Param($Obj, $FileName)
